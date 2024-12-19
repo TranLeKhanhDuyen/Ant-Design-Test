@@ -28,11 +28,27 @@ ChartJS.register(
   Legend
 );
 
+interface DashboardCardProps {
+  title: string;
+  value: number;
+  icon: React.ReactNode;
+}
+
+interface Order {
+  title: string;
+  quantity: number;
+  discountedPrice: number;
+}
+
+interface RevenueData {
+  carts: { userId: number; discountedTotal: number }[];
+}
+
 function Dashboard() {
-  const [orders, setOrders] = useState(0);
-  const [inventory, setInventory] = useState(0);
-  const [customers, setCustomers] = useState(0);
-  const [revenue, setRevenue] = useState(0);
+  const [orders, setOrders] = useState<number>(0);
+  const [inventory, setInventory] = useState<number>(0);
+  const [customers, setCustomers] = useState<number>(0);
+  const [revenue, setRevenue] = useState<number>(0);
 
   useEffect(() => {
     getOrders().then((res) => {
@@ -120,7 +136,7 @@ function Dashboard() {
   );
 }
 
-function DashboardCard({ title, value, icon }) {
+function DashboardCard({ title, value, icon }: DashboardCardProps) {
   return (
     <Card>
       <Space direction="horizontal">
@@ -130,9 +146,10 @@ function DashboardCard({ title, value, icon }) {
     </Card>
   );
 }
+
 function RecentOrders() {
-  const [dataSource, setDataSource] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [dataSource, setDataSource] = useState<Order[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     setLoading(true);
@@ -163,6 +180,7 @@ function RecentOrders() {
         loading={loading}
         dataSource={dataSource}
         pagination={false}
+        rowKey="title"
       ></Table>
     </>
   );
@@ -170,25 +188,21 @@ function RecentOrders() {
 
 function DashboardChart() {
   const [reveneuData, setReveneuData] = useState({
-    labels: [],
-    datasets: [],
+    labels: [] as string[],
+    datasets: [] as any[],
   });
 
   useEffect(() => {
-    getRevenue().then((res) => {
-      const labels = res.carts.map((cart) => {
-        return `User-${cart.userId}`;
-      });
-      const data = res.carts.map((cart) => {
-        return cart.discountedTotal;
-      });
+    getRevenue().then((res: RevenueData) => {
+      const labels = res.carts.map((cart) => `User-${cart.userId}`);
+      const data = res.carts.map((cart) => cart.discountedTotal);
 
       const dataSource = {
         labels,
         datasets: [
           {
             label: "Revenue",
-            data: data,
+            data,
             backgroundColor: "rgba(255, 0, 0, 1)",
           },
         ],
@@ -202,7 +216,7 @@ function DashboardChart() {
     responsive: true,
     plugins: {
       legend: {
-        position: "bottom",
+        position: "bottom" as const,
       },
       title: {
         display: true,
@@ -217,4 +231,5 @@ function DashboardChart() {
     </Card>
   );
 }
+
 export default Dashboard;
